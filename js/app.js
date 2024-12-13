@@ -47,6 +47,63 @@ class ZTNSimulator {
         // Save/Load functionality
         document.getElementById('save-simulation').addEventListener('click', () => this.saveSimulation());
         document.getElementById('load-simulation').addEventListener('click', () => this.loadSimulation());
+        
+        // New simulation button
+        document.getElementById('new-simulation').addEventListener('click', () => {
+            if (confirm('Start a new simulation? This will clear the current workspace.')) {
+                this.components.clear();
+                this.connections.clear();
+                this.packets.clear();
+                this.isSimulationRunning = false;
+                this.selectedComponent = null;
+                this.connectionStartComponent = null;
+                this.metricsManager.reset();
+                this.render();
+            }
+        });
+
+        // Import/Export functionality
+        document.getElementById('export-config').addEventListener('click', () => {
+            const state = {
+                components: Array.from(this.components.entries()),
+                connections: Array.from(this.connections)
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "ztns-simulation.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        });
+
+        document.getElementById('import-config').addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const state = JSON.parse(event.target.result);
+                        this.components = new Map(state.components);
+                        this.connections = new Set(state.connections);
+                        this.packets.clear();
+                        this.isSimulationRunning = false;
+                        this.selectedComponent = null;
+                        this.connectionStartComponent = null;
+                        this.render();
+                        alert('Configuration imported successfully');
+                    } catch (error) {
+                        console.error('Failed to import configuration:', error);
+                        alert('Failed to import configuration');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        });
     }
 
     resizeCanvas() {
@@ -473,16 +530,34 @@ class ZTNSimulator {
             components: Array.from(this.components.entries()),
             connections: Array.from(this.connections)
         };
-        localStorage.setItem('ztns-simulation', JSON.stringify(state));
+        try {
+            localStorage.setItem('ztns-simulation', JSON.stringify(state));
+            alert('Simulation saved successfully');
+        } catch (error) {
+            console.error('Failed to save simulation:', error);
+            alert('Failed to save simulation');
+        }
     }
 
     loadSimulation() {
-        const saved = localStorage.getItem('ztns-simulation');
-        if (saved) {
-            const state = JSON.parse(saved);
-            this.components = new Map(state.components);
-            this.connections = new Set(state.connections);
-            this.render();
+        try {
+            const saved = localStorage.getItem('ztns-simulation');
+            if (saved) {
+                const state = JSON.parse(saved);
+                this.components = new Map(state.components);
+                this.connections = new Set(state.connections);
+                this.packets.clear(); // Clear any active packets
+                this.isSimulationRunning = false; // Stop simulation
+                this.selectedComponent = null; // Clear selection
+                this.connectionStartComponent = null;
+                this.render();
+                alert('Simulation loaded successfully');
+            } else {
+                alert('No saved simulation found');
+            }
+        } catch (error) {
+            console.error('Failed to load simulation:', error);
+            alert('Failed to load simulation');
         }
     }
 }
