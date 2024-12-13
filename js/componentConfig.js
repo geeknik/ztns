@@ -131,6 +131,12 @@ export class ComponentConfigManager {
                     options: ['allow', 'deny'],
                     required: true,
                     validation: (value) => ['allow', 'deny'].includes(value) ? null : 'Invalid default action'
+                },
+                rules: {
+                    type: 'array',
+                    options: ['ip-based', 'time-based', 'role-based', 'device-based'],
+                    required: true,
+                    validation: (value) => value.length > 0 ? null : 'At least one policy rule must be selected'
                 }
             },
             'resource': {

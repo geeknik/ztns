@@ -383,7 +383,8 @@ class ZTNSimulator {
 
         // Generate new packets
         const currentTime = Date.now();
-        if (currentTime - this.lastPacketTime > 2000) { // Every 2 seconds
+        const packetInterval = 2000; // Packet generation interval in milliseconds
+        if (currentTime - this.lastPacketTime > packetInterval && this.connections.size > 0) {
             this.generateNewPacket();
             this.lastPacketTime = currentTime;
         }
