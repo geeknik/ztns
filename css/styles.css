@@ -33,14 +33,35 @@
 /* Component states */
 .component-active {
     filter: drop-shadow(0 0 10px rgba(46, 204, 113, 0.5));
+    animation: activeGlow 2s infinite;
 }
 
 .component-processing {
     filter: drop-shadow(0 0 10px rgba(52, 152, 219, 0.5));
+    animation: processingPulse 1s infinite;
 }
 
 .component-error {
     filter: drop-shadow(0 0 10px rgba(231, 76, 60, 0.5));
+    animation: errorShake 0.5s;
+}
+
+@keyframes activeGlow {
+    0% { filter: drop-shadow(0 0 5px rgba(46, 204, 113, 0.3)); }
+    50% { filter: drop-shadow(0 0 15px rgba(46, 204, 113, 0.8)); }
+    100% { filter: drop-shadow(0 0 5px rgba(46, 204, 113, 0.3)); }
+}
+
+@keyframes processingPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes errorShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
 }
 @keyframes packetGlow {
     0% { box-shadow: 0 0 5px #e74c3c; }

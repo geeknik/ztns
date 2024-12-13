@@ -239,11 +239,25 @@ class ZTNSimulator {
     updateSimulation() {
         // Update component states
         this.components.forEach(component => {
-            if (this.packets.size > 0) {
-                const isProcessing = Array.from(this.packets).some(packet => 
-                    packet.source === component.id || packet.target === component.id
+            const packets = Array.from(this.packets);
+            const isInvolved = packets.some(packet => 
+                packet.source === component.id || packet.target === component.id
+            );
+            
+            if (isInvolved) {
+                // Check for error conditions
+                const hasError = packets.some(packet => 
+                    packet.target === component.id && Math.random() < 0.05
                 );
-                component.state = isProcessing ? 'processing' : 'active';
+                
+                if (hasError) {
+                    component.state = 'error';
+                    this.metricsManager.trackDeniedAccess();
+                } else {
+                    component.state = 'processing';
+                }
+            } else if (this.isSimulationRunning) {
+                component.state = 'active';
             } else {
                 component.state = 'inactive';
             }
@@ -329,21 +343,27 @@ class ZTNSimulator {
     drawComponent(component) {
         // Component styles based on type and state
         const styles = {
-            'identity-provider': { color: '#e74c3c', icon: '🔐' },
-            'policy-engine': { color: '#2ecc71', icon: '⚖️' },
-            'resource': { color: '#f1c40f', icon: '📦' },
-            'client': { color: '#3498db', icon: '💻' },
-            'proxy': { color: '#9b59b6', icon: '🔄' }
+            'identity-provider': { color: '#e74c3c', icon: '🔐', activeColor: '#ff6b6b' },
+            'policy-engine': { color: '#2ecc71', icon: '⚖️', activeColor: '#27ae60' },
+            'resource': { color: '#f1c40f', icon: '📦', activeColor: '#f39c12' },
+            'client': { color: '#3498db', icon: '💻', activeColor: '#2980b9' },
+            'proxy': { color: '#9b59b6', icon: '🔄', activeColor: '#8e44ad' }
         };
 
-        // Apply state-based effects
-        let stateEffect = '';
+        const style = styles[component.type];
+        const radius = 25;
+
+        // State-based visual effects
         if (component.state === 'active') {
-            stateEffect = 'component-active';
+            this.ctx.shadowColor = style.activeColor;
+            this.ctx.shadowBlur = 15;
         } else if (component.state === 'processing') {
-            stateEffect = 'component-processing';
+            this.ctx.shadowColor = '#3498db';
+            this.ctx.shadowBlur = 20;
+            radius = 27; // Slightly larger when processing
         } else if (component.state === 'error') {
-            stateEffect = 'component-error';
+            this.ctx.shadowColor = '#e74c3c';
+            this.ctx.shadowBlur = 25;
         }
         
         const style = styles[component.type];
