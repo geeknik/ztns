@@ -30,9 +30,31 @@ class ZTNSimulator {
         window.addEventListener('resize', () => this.resizeCanvas());
 
         // Simulation controls
-        document.getElementById('start-simulation').addEventListener('click', () => this.startSimulation());
-        document.getElementById('pause-simulation').addEventListener('click', () => this.pauseSimulation());
-        document.getElementById('reset-simulation').addEventListener('click', () => this.resetSimulation());
+        const startBtn = document.getElementById('start-simulation');
+        const pauseBtn = document.getElementById('pause-simulation');
+        const resetBtn = document.getElementById('reset-simulation');
+        
+        startBtn.addEventListener('click', () => {
+            if (!this.components.size) {
+                alert('Add some components to the simulation first');
+                return;
+            }
+            this.startSimulation();
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+        });
+        
+        pauseBtn.addEventListener('click', () => {
+            this.pauseSimulation();
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+        });
+        
+        resetBtn.addEventListener('click', () => {
+            this.resetSimulation();
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+        });
 
         // Component drag and drop
         const components = document.querySelectorAll('.component');
@@ -45,8 +67,24 @@ class ZTNSimulator {
         this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e));
 
         // Save/Load functionality
-        document.getElementById('save-simulation').addEventListener('click', () => this.saveSimulation());
-        document.getElementById('load-simulation').addEventListener('click', () => this.loadSimulation());
+        const saveBtn = document.getElementById('save-simulation');
+        const loadBtn = document.getElementById('load-simulation');
+        
+        saveBtn.addEventListener('click', () => {
+            if (!this.components.size) {
+                alert('No simulation to save');
+                return;
+            }
+            this.saveSimulation();
+        });
+        
+        loadBtn.addEventListener('click', () => {
+            if (this.isSimulationRunning) {
+                alert('Please pause the simulation before loading');
+                return;
+            }
+            this.loadSimulation();
+        });
         
         // New simulation button
         document.getElementById('new-simulation').addEventListener('click', () => {
@@ -262,20 +300,26 @@ class ZTNSimulator {
     }
 
     startSimulation() {
+        if (this.isSimulationRunning) return;
         this.isSimulationRunning = true;
         this.simulationLoop();
     }
 
     pauseSimulation() {
+        if (!this.isSimulationRunning) return;
         this.isSimulationRunning = false;
+        this.render();
     }
 
     resetSimulation() {
         this.isSimulationRunning = false;
         this.packets.clear();
         this.metricsManager.reset();
+        this.selectedComponent = null;
+        this.connectionStartComponent = null;
         this.render();
         this.updateMetricsDisplay();
+        this.updateConfigPanel(null);
     }
 
     updateMetricsDisplay() {
