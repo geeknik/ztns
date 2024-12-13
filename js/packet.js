@@ -10,7 +10,8 @@ export class Packet {
 
     update() {
         if (this.progress < 1) {
-            this.progress += 0.02;
+            // Use time-based animation (60 FPS as base)
+            this.progress += (1/60) * 1.2; // Complete in ~0.8 seconds
         }
         return this.progress >= 1;
     }

@@ -351,7 +351,7 @@ class ZTNSimulator {
         };
 
         const style = styles[component.type];
-        const radius = 25;
+        let radius = 25;
 
         // State-based visual effects
         if (component.state === 'active') {
@@ -365,9 +365,6 @@ class ZTNSimulator {
             this.ctx.shadowColor = '#e74c3c';
             this.ctx.shadowBlur = 25;
         }
-        
-        const style = styles[component.type];
-        const radius = 25;
 
         // Draw selection highlight
         if (component === this.selectedComponent || component === this.connectionStartComponent) {
@@ -377,6 +374,10 @@ class ZTNSimulator {
             this.ctx.fill();
         }
 
+        // Reset shadow state
+        this.ctx.shadowColor = 'transparent';
+        this.ctx.shadowBlur = 0;
+        
         // Draw component circle
         this.ctx.fillStyle = style.color;
         this.ctx.beginPath();
