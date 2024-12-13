@@ -630,8 +630,9 @@ class ZTNSimulator {
 }
 
 // Initialize the application
-    handleKeyboardShortcuts(e) {
-        // Don't trigger shortcuts when typing in input fields
+document.addEventListener('DOMContentLoaded', () => {
+    window.simulator = new ZTNSimulator();
+});
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
             return;
         }
