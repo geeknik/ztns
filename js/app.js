@@ -141,18 +141,81 @@ class ZTNSimulator {
     }
 
     drawComponent(component) {
-        this.ctx.fillStyle = '#3498db';
+        // Component styles based on type
+        const styles = {
+            'identity-provider': { color: '#e74c3c', icon: '🔐' },
+            'policy-engine': { color: '#2ecc71', icon: '⚖️' },
+            'resource': { color: '#f1c40f', icon: '📦' },
+            'client': { color: '#3498db', icon: '💻' },
+            'proxy': { color: '#9b59b6', icon: '🔄' }
+        };
+        
+        const style = styles[component.type];
+        const radius = 25;
+
+        // Draw component circle
+        this.ctx.fillStyle = style.color;
         this.ctx.beginPath();
-        this.ctx.arc(component.x, component.y, 20, 0, Math.PI * 2);
+        this.ctx.arc(component.x, component.y, radius, 0, Math.PI * 2);
         this.ctx.fill();
 
-        this.ctx.fillStyle = 'white';
+        // Add border
+        this.ctx.strokeStyle = '#2c3e50';
+        this.ctx.lineWidth = 2;
+        this.ctx.stroke();
+
+        // Draw icon
+        this.ctx.font = '20px Arial';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText(component.type, component.x, component.y + 35);
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText(style.icon, component.x, component.y);
+
+        // Draw label
+        this.ctx.font = '14px Arial';
+        this.ctx.fillStyle = '#2c3e50';
+        this.ctx.fillText(component.type.replace('-', ' '), component.x, component.y + radius + 20);
     }
 
     drawConnection(connection) {
-        // Draw connection lines between components
+        const { source, target } = connection;
+        const sourceComp = this.components.get(source);
+        const targetComp = this.components.get(target);
+
+        if (!sourceComp || !targetComp) return;
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(sourceComp.x, sourceComp.y);
+        this.ctx.lineTo(targetComp.x, targetComp.y);
+        
+        this.ctx.strokeStyle = '#95a5a6';
+        this.ctx.lineWidth = 2;
+        this.ctx.setLineDash([5, 5]);
+        this.ctx.stroke();
+        this.ctx.setLineDash([]);
+
+        // Draw arrow
+        const angle = Math.atan2(targetComp.y - sourceComp.y, targetComp.x - sourceComp.x);
+        const arrowLength = 15;
+        const arrowWidth = 8;
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(
+            targetComp.x - arrowLength * Math.cos(angle),
+            targetComp.y - arrowLength * Math.sin(angle)
+        );
+        this.ctx.lineTo(
+            targetComp.x - arrowLength * Math.cos(angle) + arrowWidth * Math.sin(angle),
+            targetComp.y - arrowLength * Math.sin(angle) - arrowWidth * Math.cos(angle)
+        );
+        this.ctx.lineTo(targetComp.x, targetComp.y);
+        this.ctx.lineTo(
+            targetComp.x - arrowLength * Math.cos(angle) - arrowWidth * Math.sin(angle),
+            targetComp.y - arrowLength * Math.sin(angle) + arrowWidth * Math.cos(angle)
+        );
+        this.ctx.closePath();
+        
+        this.ctx.fillStyle = '#95a5a6';
+        this.ctx.fill();
     }
 
     updateConfigPanel(component) {
