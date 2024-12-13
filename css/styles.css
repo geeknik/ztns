@@ -126,6 +126,17 @@ button:hover {
     box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
+.field-error {
+    color: #e74c3c;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+.invalid {
+    border-color: #e74c3c !important;
+    background-color: rgba(231, 76, 60, 0.1);
+}
+
 /* Control Panel */
 .control-panel {
     background: white;

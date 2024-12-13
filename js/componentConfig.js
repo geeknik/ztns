@@ -7,6 +7,7 @@ export class ComponentConfigManager {
     generateConfigForm(component) {
         const form = document.createElement('form');
         form.className = 'config-form';
+        form.addEventListener('submit', (e) => e.preventDefault());
         
         // Add component type header
         const header = document.createElement('h3');
@@ -64,6 +65,9 @@ export class ComponentConfigManager {
             }
 
             input.id = `config-${key}`;
+            const errorSpan = document.createElement('span');
+            errorSpan.className = 'field-error';
+            
             input.addEventListener('change', (e) => {
                 let value = e.target.value;
                 if (field.type === 'array') {
@@ -72,6 +76,16 @@ export class ComponentConfigManager {
                     value = Number(value);
                 }
                 
+                // Validate the input
+                const error = field.validation?.(value);
+                if (error) {
+                    errorSpan.textContent = error;
+                    input.classList.add('invalid');
+                    return;
+                }
+                
+                errorSpan.textContent = '';
+                input.classList.remove('invalid');
                 component.config[key] = value;
                 this.updateCallback(component);
             });
@@ -95,45 +109,69 @@ export class ComponentConfigManager {
             'identity-provider': {
                 authMethods: {
                     type: 'array',
-                    options: ['certificate', 'token', 'password', 'biometric']
+                    options: ['certificate', 'token', 'password', 'biometric'],
+                    required: true,
+                    validation: (value) => value.length > 0 ? null : 'At least one auth method is required'
                 },
                 sessionTimeout: {
                     type: 'number',
                     min: 300,
-                    max: 86400
+                    max: 86400,
+                    required: true,
+                    validation: (value) => {
+                        if (value < 300) return 'Session timeout must be at least 300 seconds';
+                        if (value > 86400) return 'Session timeout cannot exceed 86400 seconds';
+                        return null;
+                    }
                 }
             },
             'policy-engine': {
                 defaultAction: {
                     type: 'select',
-                    options: ['allow', 'deny']
+                    options: ['allow', 'deny'],
+                    required: true,
+                    validation: (value) => ['allow', 'deny'].includes(value) ? null : 'Invalid default action'
                 }
             },
             'resource': {
                 accessLevel: {
                     type: 'select',
-                    options: ['public', 'restricted', 'confidential']
+                    options: ['public', 'restricted', 'confidential'],
+                    required: true,
+                    validation: (value) => ['public', 'restricted', 'confidential'].includes(value) ? null : 'Invalid access level'
                 },
                 protocols: {
                     type: 'array',
-                    options: ['https', 'ssh', 'sftp']
+                    options: ['https', 'ssh', 'sftp'],
+                    required: true,
+                    validation: (value) => value.length > 0 ? null : 'At least one protocol must be selected'
                 }
             },
             'client': {
                 trustLevel: {
                     type: 'number',
                     min: 0,
-                    max: 100
+                    max: 100,
+                    required: true,
+                    validation: (value) => {
+                        if (value < 0) return 'Trust level cannot be negative';
+                        if (value > 100) return 'Trust level cannot exceed 100';
+                        return null;
+                    }
                 }
             },
             'proxy': {
                 mode: {
                     type: 'select',
-                    options: ['reverse', 'forward']
+                    options: ['reverse', 'forward'],
+                    required: true,
+                    validation: (value) => ['reverse', 'forward'].includes(value) ? null : 'Invalid proxy mode'
                 },
                 tlsVersion: {
                     type: 'select',
-                    options: ['1.2', '1.3']
+                    options: ['1.2', '1.3'],
+                    required: true,
+                    validation: (value) => ['1.2', '1.3'].includes(value) ? null : 'Invalid TLS version'
                 }
             }
         };
