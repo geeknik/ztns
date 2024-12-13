@@ -1,5 +1,6 @@
 import { ComponentConfigManager } from './componentConfig.js';
 import { Packet } from './packet.js';
+import { MetricsManager } from './metricsManager.js';
 
 // Main application class
 class ZTNSimulator {
@@ -14,6 +15,7 @@ class ZTNSimulator {
         this.selectedComponent = null;
         this.connectionStartComponent = null;
         this.lastPacketTime = 0;
+        this.metricsManager = new MetricsManager();
         
         this.configManager = new ComponentConfigManager(
             (component) => this.handleConfigUpdate(component)
@@ -190,8 +192,15 @@ class ZTNSimulator {
 
     resetSimulation() {
         this.isSimulationRunning = false;
-        // Reset simulation state
+        this.packets.clear();
+        this.metricsManager.reset();
         this.render();
+        this.updateMetricsDisplay();
+    }
+
+    updateMetricsDisplay() {
+        const metricsDiv = document.getElementById('metrics');
+        metricsDiv.innerHTML = this.metricsManager.getMetricsHTML();
     }
 
     simulationLoop() {
@@ -210,6 +219,7 @@ class ZTNSimulator {
             const completed = packet.update();
             if (completed) {
                 this.packets.delete(packet);
+                this.metricsManager.trackResponseTime(Math.random() * 100); // Simulated response time
             }
         }
 
@@ -219,6 +229,10 @@ class ZTNSimulator {
             this.generateNewPacket();
             this.lastPacketTime = currentTime;
         }
+
+        // Update metrics
+        this.metricsManager.updateConnections(this.connections.size);
+        this.updateMetricsDisplay();
     }
 
     generateNewPacket() {
@@ -226,8 +240,16 @@ class ZTNSimulator {
         if (connections.length === 0) return;
 
         const connection = connections[Math.floor(Math.random() * connections.length)];
-        const packet = new Packet(connection.source, connection.target);
+        const types = ['request', 'auth', 'response'];
+        const packetType = types[Math.floor(Math.random() * types.length)];
+        const packet = new Packet(connection.source, connection.target, packetType);
         this.packets.add(packet);
+        this.metricsManager.trackPacket(packet);
+        
+        // Simulate some denied access attempts
+        if (Math.random() < 0.1) { // 10% chance
+            this.metricsManager.trackDeniedAccess();
+        }
     }
 
     render() {
