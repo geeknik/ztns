@@ -633,6 +633,26 @@ class ZTNSimulator {
 document.addEventListener('DOMContentLoaded', () => {
     window.simulator = new ZTNSimulator();
 });
+    }
+
+    loadPreferences() {
+        const saved = localStorage.getItem('ztns-preferences');
+        return saved ? JSON.parse(saved) : { darkMode: false };
+    }
+
+    savePreferences() {
+        localStorage.setItem('ztns-preferences', JSON.stringify(this.preferences));
+    }
+
+    showTutorial() {
+        if (!window.tutorial) {
+            window.tutorial = new Tutorial();
+        }
+        window.tutorial.start();
+    }
+
+    handleKeyboardShortcuts(e) {
+        // Don't trigger shortcuts when typing in input fields
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
             return;
         }
@@ -683,20 +703,4 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 break;
         }
-    }
-
-    loadPreferences() {
-        const saved = localStorage.getItem('ztns-preferences');
-        return saved ? JSON.parse(saved) : { darkMode: false };
-    }
-
-    savePreferences() {
-        localStorage.setItem('ztns-preferences', JSON.stringify(this.preferences));
-    }
-
-    showTutorial() {
-        if (!window.tutorial) {
-            window.tutorial = new Tutorial();
-        }
-        window.tutorial.start();
     }
