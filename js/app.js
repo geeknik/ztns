@@ -1,5 +1,8 @@
+import { ComponentConfigManager } from './componentConfig.js';
+
 // Main application class
 class ZTNSimulator {
+    configManager;
     constructor() {
         this.canvas = document.getElementById('network-canvas');
         this.ctx = this.canvas.getContext('2d');
@@ -8,6 +11,10 @@ class ZTNSimulator {
         this.isSimulationRunning = false;
         this.selectedComponent = null;
         this.connectionStartComponent = null;
+        
+        this.configManager = new ComponentConfigManager(
+            (component) => this.handleConfigUpdate(component)
+        );
 
         this.initializeEventListeners();
         this.resizeCanvas();
@@ -67,6 +74,11 @@ class ZTNSimulator {
         const clickX = e.clientX - rect.left;
         const clickY = e.clientY - rect.top;
         
+        // Clear config panel if clicking empty space
+        if (!this.components.size) {
+            this.updateConfigPanel(null);
+        }
+        
         // Find clicked component
         let clickedComponent = null;
         for (const [id, component] of this.components) {
@@ -105,6 +117,11 @@ class ZTNSimulator {
         this.render();
     }
 
+    handleConfigUpdate(component) {
+        // Trigger a re-render when configuration changes
+        this.render();
+    }
+    
     createConnection(sourceId, targetId) {
         // Prevent duplicate connections
         const connectionExists = Array.from(this.connections).some(
@@ -286,10 +303,11 @@ class ZTNSimulator {
 
     updateConfigPanel(component) {
         const configPanel = document.getElementById('component-config');
-        configPanel.innerHTML = `
-            <h3>${component.type}</h3>
-            <pre>${JSON.stringify(component.config, null, 2)}</pre>
-        `;
+        configPanel.innerHTML = '';
+        if (component) {
+            const form = this.configManager.generateConfigForm(component);
+            configPanel.appendChild(form);
+        }
     }
 
     saveSimulation() {
