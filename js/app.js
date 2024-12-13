@@ -6,6 +6,8 @@ class ZTNSimulator {
         this.components = new Map();
         this.connections = new Set();
         this.isSimulationRunning = false;
+        this.selectedComponent = null;
+        this.connectionStartComponent = null;
 
         this.initializeEventListeners();
         this.resizeCanvas();
@@ -28,6 +30,7 @@ class ZTNSimulator {
 
         this.canvas.addEventListener('dragover', (e) => this.handleDragOver(e));
         this.canvas.addEventListener('drop', (e) => this.handleDrop(e));
+        this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e));
 
         // Save/Load functionality
         document.getElementById('save-simulation').addEventListener('click', () => this.saveSimulation());
@@ -57,6 +60,61 @@ class ZTNSimulator {
         const y = e.clientY - rect.top;
 
         this.addComponent(componentType, x, y);
+    }
+
+    handleCanvasClick(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
+        
+        // Find clicked component
+        let clickedComponent = null;
+        for (const [id, component] of this.components) {
+            const distance = Math.sqrt(
+                Math.pow(clickX - component.x, 2) + 
+                Math.pow(clickY - component.y, 2)
+            );
+            if (distance <= 25) { // Component radius
+                clickedComponent = component;
+                break;
+            }
+        }
+
+        if (clickedComponent) {
+            if (this.connectionStartComponent) {
+                // Complete connection
+                if (this.connectionStartComponent !== clickedComponent) {
+                    this.createConnection(
+                        this.connectionStartComponent.id,
+                        clickedComponent.id
+                    );
+                }
+                this.connectionStartComponent = null;
+                this.selectedComponent = null;
+            } else {
+                // Start new connection
+                this.connectionStartComponent = clickedComponent;
+                this.selectedComponent = clickedComponent;
+            }
+        } else {
+            // Clicked empty space - clear selection
+            this.connectionStartComponent = null;
+            this.selectedComponent = null;
+        }
+        
+        this.render();
+    }
+
+    createConnection(sourceId, targetId) {
+        // Prevent duplicate connections
+        const connectionExists = Array.from(this.connections).some(
+            conn => (conn.source === sourceId && conn.target === targetId) ||
+                   (conn.source === targetId && conn.target === sourceId)
+        );
+
+        if (!connectionExists) {
+            this.connections.add({ source: sourceId, target: targetId });
+        }
     }
 
     addComponent(type, x, y) {
@@ -152,6 +210,14 @@ class ZTNSimulator {
         
         const style = styles[component.type];
         const radius = 25;
+
+        // Draw selection highlight
+        if (component === this.selectedComponent || component === this.connectionStartComponent) {
+            this.ctx.beginPath();
+            this.ctx.arc(component.x, component.y, radius + 5, 0, Math.PI * 2);
+            this.ctx.fillStyle = 'rgba(52, 152, 219, 0.3)';
+            this.ctx.fill();
+        }
 
         // Draw component circle
         this.ctx.fillStyle = style.color;
