@@ -16,6 +16,12 @@ class ZTNSimulator {
         this.connectionStartComponent = null;
         this.lastPacketTime = 0;
         this.metricsManager = new MetricsManager();
+        this.preferences = this.loadPreferences();
+        
+        // Apply saved preferences
+        if (this.preferences.darkMode) {
+            document.body.classList.add('dark-mode');
+        }
         
         this.configManager = new ComponentConfigManager(
             (component) => this.handleConfigUpdate(component)
@@ -28,6 +34,22 @@ class ZTNSimulator {
     initializeEventListeners() {
         // Canvas resize handling
         window.addEventListener('resize', () => this.resizeCanvas());
+        
+        // Keyboard shortcuts
+        window.addEventListener('keydown', (e) => this.handleKeyboardShortcuts(e));
+        
+        // Dark mode toggle
+        document.getElementById('dark-mode-toggle').addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            this.preferences.darkMode = document.body.classList.contains('dark-mode');
+            this.savePreferences();
+            this.render(); // Re-render with new theme
+        });
+        
+        // Help button
+        document.getElementById('help-button').addEventListener('click', () => {
+            this.showTutorial();
+        });
 
         // Simulation controls
         const startBtn = document.getElementById('start-simulation');
@@ -611,3 +633,72 @@ class ZTNSimulator {
 document.addEventListener('DOMContentLoaded', () => {
     window.simulator = new ZTNSimulator();
 });
+    handleKeyboardShortcuts(e) {
+        // Don't trigger shortcuts when typing in input fields
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+            return;
+        }
+
+        // Common shortcuts
+        if (e.ctrlKey || e.metaKey) {
+            switch (e.key.toLowerCase()) {
+                case 'n':
+                    e.preventDefault();
+                    document.getElementById('new-simulation').click();
+                    break;
+                case 's':
+                    e.preventDefault();
+                    document.getElementById('save-simulation').click();
+                    break;
+                case 'o':
+                    e.preventDefault();
+                    document.getElementById('load-simulation').click();
+                    break;
+            }
+        }
+
+        // Single key shortcuts
+        switch (e.key.toLowerCase()) {
+            case ' ':
+                e.preventDefault();
+                if (this.isSimulationRunning) {
+                    document.getElementById('pause-simulation').click();
+                } else {
+                    document.getElementById('start-simulation').click();
+                }
+                break;
+            case 'r':
+                if (!e.ctrlKey && !e.metaKey) {
+                    e.preventDefault();
+                    document.getElementById('reset-simulation').click();
+                }
+                break;
+            case 'h':
+                e.preventDefault();
+                document.getElementById('help-button').click();
+                break;
+            case 'escape':
+                if (this.selectedComponent) {
+                    this.selectedComponent = null;
+                    this.connectionStartComponent = null;
+                    this.render();
+                }
+                break;
+        }
+    }
+
+    loadPreferences() {
+        const saved = localStorage.getItem('ztns-preferences');
+        return saved ? JSON.parse(saved) : { darkMode: false };
+    }
+
+    savePreferences() {
+        localStorage.setItem('ztns-preferences', JSON.stringify(this.preferences));
+    }
+
+    showTutorial() {
+        if (!window.tutorial) {
+            window.tutorial = new Tutorial();
+        }
+        window.tutorial.start();
+    }

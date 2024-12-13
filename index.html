@@ -9,13 +9,19 @@
 </head>
 <body>
     <header>
-        <h1>Zero Trust Network Simulator</h1>
+        <div class="header-content">
+            <h1>Zero Trust Network Simulator</h1>
+            <div class="header-controls">
+                <button id="dark-mode-toggle" title="Toggle Dark Mode">🌓</button>
+                <button id="help-button" title="Show Tutorial">❔</button>
+            </div>
+        </div>
         <div class="toolbar">
-            <button id="new-simulation">New</button>
-            <button id="save-simulation">Save</button>
-            <button id="load-simulation">Load</button>
-            <button id="export-config">Export</button>
-            <button id="import-config">Import</button>
+            <button id="new-simulation" title="New Simulation (Ctrl+N)">New</button>
+            <button id="save-simulation" title="Save Simulation (Ctrl+S)">Save</button>
+            <button id="load-simulation" title="Load Simulation (Ctrl+O)">Load</button>
+            <button id="export-config" title="Export Configuration">Export</button>
+            <button id="import-config" title="Import Configuration">Import</button>
         </div>
     </header>
 
