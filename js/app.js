@@ -630,9 +630,36 @@ class ZTNSimulator {
 }
 
 // Initialize the application
+// Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
     window.simulator = new ZTNSimulator();
 });
+
+class ZTNSimulator {
+    constructor() {
+        this.canvas = document.getElementById('network-canvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.components = new Map();
+        this.connections = new Set();
+        this.packets = new Set();
+        this.isSimulationRunning = false;
+        this.selectedComponent = null;
+        this.connectionStartComponent = null;
+        this.lastPacketTime = 0;
+        this.metricsManager = new MetricsManager();
+        this.preferences = this.loadPreferences();
+        
+        // Apply saved preferences
+        if (this.preferences.darkMode) {
+            document.body.classList.add('dark-mode');
+        }
+        
+        this.configManager = new ComponentConfigManager(
+            (component) => this.handleConfigUpdate(component)
+        );
+
+        this.initializeEventListeners();
+        this.resizeCanvas();
     }
 
     loadPreferences() {
