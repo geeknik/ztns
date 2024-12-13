@@ -128,6 +128,12 @@ class ZTNSimulator {
     }
     
     createConnection(sourceId, targetId) {
+        // Determine connection type based on component types
+        const sourceComp = this.components.get(sourceId);
+        const targetComp = this.components.get(targetId);
+        
+        const connectionType = this.determineConnectionType(sourceComp.type, targetComp.type);
+        
         // Prevent duplicate connections
         const connectionExists = Array.from(this.connections).some(
             conn => (conn.source === sourceId && conn.target === targetId) ||
@@ -135,8 +141,25 @@ class ZTNSimulator {
         );
 
         if (!connectionExists) {
-            this.connections.add({ source: sourceId, target: targetId });
+            this.connections.add({ 
+                source: sourceId, 
+                target: targetId,
+                type: connectionType,
+                state: 'inactive'
+            });
         }
+    }
+
+    determineConnectionType(sourceType, targetType) {
+        if (sourceType === 'client' && targetType === 'identity-provider' ||
+            targetType === 'client' && sourceType === 'identity-provider') {
+            return 'auth';
+        }
+        if (sourceType === 'proxy' && targetType === 'policy-engine' ||
+            targetType === 'proxy' && sourceType === 'policy-engine') {
+            return 'policy';
+        }
+        return 'data';
     }
 
     addComponent(type, x, y) {
@@ -214,12 +237,32 @@ class ZTNSimulator {
     }
 
     updateSimulation() {
+        // Update component states
+        this.components.forEach(component => {
+            if (this.packets.size > 0) {
+                const isProcessing = Array.from(this.packets).some(packet => 
+                    packet.source === component.id || packet.target === component.id
+                );
+                component.state = isProcessing ? 'processing' : 'active';
+            } else {
+                component.state = 'inactive';
+            }
+        });
+
+        // Update connection states
+        this.connections.forEach(connection => {
+            const hasPackets = Array.from(this.packets).some(packet =>
+                packet.source === connection.source && packet.target === connection.target
+            );
+            connection.state = hasPackets ? 'active' : 'inactive';
+        });
+
         // Update existing packets
         for (const packet of this.packets) {
             const completed = packet.update();
             if (completed) {
                 this.packets.delete(packet);
-                this.metricsManager.trackResponseTime(Math.random() * 100); // Simulated response time
+                this.metricsManager.trackResponseTime(Math.random() * 100);
             }
         }
 
@@ -284,7 +327,7 @@ class ZTNSimulator {
     }
 
     drawComponent(component) {
-        // Component styles based on type
+        // Component styles based on type and state
         const styles = {
             'identity-provider': { color: '#e74c3c', icon: '🔐' },
             'policy-engine': { color: '#2ecc71', icon: '⚖️' },
@@ -292,6 +335,16 @@ class ZTNSimulator {
             'client': { color: '#3498db', icon: '💻' },
             'proxy': { color: '#9b59b6', icon: '🔄' }
         };
+
+        // Apply state-based effects
+        let stateEffect = '';
+        if (component.state === 'active') {
+            stateEffect = 'component-active';
+        } else if (component.state === 'processing') {
+            stateEffect = 'component-processing';
+        } else if (component.state === 'error') {
+            stateEffect = 'component-error';
+        }
         
         const style = styles[component.type];
         const radius = 25;
@@ -328,19 +381,35 @@ class ZTNSimulator {
     }
 
     drawConnection(connection) {
-        const { source, target } = connection;
+        const { source, target, type, state } = connection;
         const sourceComp = this.components.get(source);
         const targetComp = this.components.get(target);
 
         if (!sourceComp || !targetComp) return;
 
+        // Set connection style based on type
+        const styles = {
+            'auth': { color: '#e74c3c', width: 3 },
+            'policy': { color: '#2ecc71', width: 3 },
+            'data': { color: '#3498db', width: 2 }
+        };
+        const style = styles[type] || styles.data;
+
         this.ctx.beginPath();
         this.ctx.moveTo(sourceComp.x, sourceComp.y);
         this.ctx.lineTo(targetComp.x, targetComp.y);
         
-        this.ctx.strokeStyle = '#95a5a6';
-        this.ctx.lineWidth = 2;
-        this.ctx.setLineDash([5, 5]);
+        this.ctx.strokeStyle = style.color;
+        this.ctx.lineWidth = style.width;
+        
+        // Animate active connections
+        if (state === 'active') {
+            this.ctx.setLineDash([5, 5]);
+            this.ctx.lineDashOffset = -((Date.now() / 100) % 20);
+        } else {
+            this.ctx.setLineDash([5, 5]);
+        }
+        
         this.ctx.stroke();
         this.ctx.setLineDash([]);
 

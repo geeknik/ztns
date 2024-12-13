@@ -1,4 +1,47 @@
+/* Connection types */
+.connection-data {
+    stroke: #3498db;
+    animation: dataFlow 1s infinite;
+}
+
+.connection-auth {
+    stroke: #e74c3c;
+    animation: authFlow 1s infinite;
+}
+
+.connection-policy {
+    stroke: #2ecc71;
+    animation: policyFlow 1s infinite;
+}
+
 /* Animation keyframes */
+@keyframes dataFlow {
+    0% { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: -20; }
+}
+
+@keyframes authFlow {
+    0% { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: -20; }
+}
+
+@keyframes policyFlow {
+    0% { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: -20; }
+}
+
+/* Component states */
+.component-active {
+    filter: drop-shadow(0 0 10px rgba(46, 204, 113, 0.5));
+}
+
+.component-processing {
+    filter: drop-shadow(0 0 10px rgba(52, 152, 219, 0.5));
+}
+
+.component-error {
+    filter: drop-shadow(0 0 10px rgba(231, 76, 60, 0.5));
+}
 @keyframes packetGlow {
     0% { box-shadow: 0 0 5px #e74c3c; }
     50% { box-shadow: 0 0 15px #e74c3c; }
