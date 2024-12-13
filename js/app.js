@@ -1,4 +1,5 @@
 import { ComponentConfigManager } from './componentConfig.js';
+import { Packet } from './packet.js';
 
 // Main application class
 class ZTNSimulator {
@@ -8,9 +9,11 @@ class ZTNSimulator {
         this.ctx = this.canvas.getContext('2d');
         this.components = new Map();
         this.connections = new Set();
+        this.packets = new Set();
         this.isSimulationRunning = false;
         this.selectedComponent = null;
         this.connectionStartComponent = null;
+        this.lastPacketTime = 0;
         
         this.configManager = new ComponentConfigManager(
             (component) => this.handleConfigUpdate(component)
@@ -202,7 +205,29 @@ class ZTNSimulator {
     }
 
     updateSimulation() {
-        // Update component states and interactions
+        // Update existing packets
+        for (const packet of this.packets) {
+            const completed = packet.update();
+            if (completed) {
+                this.packets.delete(packet);
+            }
+        }
+
+        // Generate new packets
+        const currentTime = Date.now();
+        if (currentTime - this.lastPacketTime > 2000) { // Every 2 seconds
+            this.generateNewPacket();
+            this.lastPacketTime = currentTime;
+        }
+    }
+
+    generateNewPacket() {
+        const connections = Array.from(this.connections);
+        if (connections.length === 0) return;
+
+        const connection = connections[Math.floor(Math.random() * connections.length)];
+        const packet = new Packet(connection.source, connection.target);
+        this.packets.add(packet);
     }
 
     render() {
@@ -211,8 +236,29 @@ class ZTNSimulator {
         // Draw connections
         this.connections.forEach(connection => this.drawConnection(connection));
 
+        // Draw packets
+        this.packets.forEach(packet => this.drawPacket(packet));
+
         // Draw components
         this.components.forEach(component => this.drawComponent(component));
+    }
+
+    drawPacket(packet) {
+        const pos = packet.getPosition(this.components);
+        if (!pos) return;
+
+        // Draw packet circle
+        this.ctx.beginPath();
+        this.ctx.arc(pos.x, pos.y, 6, 0, Math.PI * 2);
+        this.ctx.fillStyle = '#e74c3c';
+        this.ctx.fill();
+
+        // Draw glowing effect
+        this.ctx.beginPath();
+        this.ctx.arc(pos.x, pos.y, 8, 0, Math.PI * 2);
+        this.ctx.strokeStyle = 'rgba(231, 76, 60, 0.3)';
+        this.ctx.lineWidth = 2;
+        this.ctx.stroke();
     }
 
     drawComponent(component) {
