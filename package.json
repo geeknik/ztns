@@ -1,0 +1,13 @@
+{
+"name": "zero-trust-network-simulator",
+"version": "1.0.0",
+"description": "Browser-based Zero Trust Network Simulator",
+"scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+},
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

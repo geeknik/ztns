@@ -143,10 +143,27 @@ class ZTNSimulator {
             input.accept = '.json';
             input.onchange = (e) => {
                 const file = e.target.files[0];
+                if (!file) return;
+
+                // Check file size (limit to 10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('File too large. Please select a file smaller than 10MB.');
+                    return;
+                }
+
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     try {
                         const state = JSON.parse(event.target.result);
+
+                        // Validate imported data
+                        if (!state.components || !Array.isArray(state.components)) {
+                            throw new Error('Invalid configuration: missing or invalid components');
+                        }
+                        if (!state.connections || !Array.isArray(state.connections)) {
+                            throw new Error('Invalid configuration: missing or invalid connections');
+                        }
+
                         this.components = new Map(state.components);
                         this.connections = new Set(state.connections);
                         this.packets.clear();
@@ -157,9 +174,18 @@ class ZTNSimulator {
                         alert('Configuration imported successfully');
                     } catch (error) {
                         console.error('Failed to import configuration:', error);
-                        alert('Failed to import configuration');
+                        if (error instanceof SyntaxError) {
+                            alert('Failed to import configuration: invalid JSON file');
+                        } else {
+                            alert(`Failed to import configuration: ${error.message}`);
+                        }
                     }
                 };
+
+                reader.onerror = () => {
+                    alert('Failed to read the selected file');
+                };
+
                 reader.readAsText(file);
             };
             input.click();
@@ -593,48 +619,78 @@ class ZTNSimulator {
     }
 
     saveSimulation() {
-        const state = {
-            components: Array.from(this.components.entries()),
-            connections: Array.from(this.connections)
-        };
         try {
-            localStorage.setItem('ztns-simulation', JSON.stringify(state));
+            const state = {
+                components: Array.from(this.components.entries()),
+                connections: Array.from(this.connections),
+                version: '1.0',
+                timestamp: Date.now()
+            };
+
+            // Check if localStorage is available
+            if (typeof Storage === "undefined") {
+                throw new Error('Local storage is not supported in this browser');
+            }
+
+            // Check available storage space (rough estimate)
+            const stateStr = JSON.stringify(state);
+            if (stateStr.length > 5 * 1024 * 1024) { // 5MB limit
+                throw new Error('Simulation data too large to save locally');
+            }
+
+            localStorage.setItem('ztns-simulation', stateStr);
             alert('Simulation saved successfully');
         } catch (error) {
             console.error('Failed to save simulation:', error);
-            alert('Failed to save simulation');
+            alert(`Failed to save simulation: ${error.message}`);
         }
     }
 
     loadSimulation() {
         try {
-            const saved = localStorage.getItem('ztns-simulation');
-            if (saved) {
-                const state = JSON.parse(saved);
-                this.components = new Map(state.components);
-                this.connections = new Set(state.connections);
-                this.packets.clear(); // Clear any active packets
-                this.isSimulationRunning = false; // Stop simulation
-                this.selectedComponent = null; // Clear selection
-                this.connectionStartComponent = null;
-                this.render();
-                alert('Simulation loaded successfully');
-            } else {
-                alert('No saved simulation found');
+            // Check if localStorage is available
+            if (typeof Storage === "undefined") {
+                throw new Error('Local storage is not supported in this browser');
             }
+
+            const saved = localStorage.getItem('ztns-simulation');
+            if (!saved) {
+                alert('No saved simulation found');
+                return;
+            }
+
+            const state = JSON.parse(saved);
+
+            // Basic validation of loaded data
+            if (!state.components || !Array.isArray(state.components)) {
+                throw new Error('Invalid simulation data: missing or invalid components');
+            }
+            if (!state.connections || !Array.isArray(state.connections)) {
+                throw new Error('Invalid simulation data: missing or invalid connections');
+            }
+
+            // Version compatibility check
+            if (state.version && state.version !== '1.0') {
+                console.warn('Loading simulation from different version:', state.version);
+            }
+
+            this.components = new Map(state.components);
+            this.connections = new Set(state.connections);
+            this.packets.clear(); // Clear any active packets
+            this.isSimulationRunning = false; // Stop simulation
+            this.selectedComponent = null; // Clear selection
+            this.connectionStartComponent = null;
+            this.render();
+            alert('Simulation loaded successfully');
         } catch (error) {
             console.error('Failed to load simulation:', error);
-            alert('Failed to load simulation');
+            if (error instanceof SyntaxError) {
+                alert('Failed to load simulation: corrupted save data');
+            } else {
+                alert(`Failed to load simulation: ${error.message}`);
+            }
         }
     }
-}
-
-// Initialize the application
-// Initialize the application
-document.addEventListener('DOMContentLoaded', () => {
-    window.simulator = new ZTNSimulator();
-});
-
 
     loadPreferences() {
         const saved = localStorage.getItem('ztns-preferences');
@@ -705,3 +761,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
         }
     }
+}
+
+// Initialize the application
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        window.simulator = new ZTNSimulator();
+    } catch (error) {
+        console.error('Failed to initialize simulator:', error);
+        alert('Failed to initialize the simulator. Please check the browser console for details.');
+    }
+});

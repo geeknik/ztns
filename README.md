@@ -5,6 +5,7 @@ A privacy-focused, browser-based simulation tool for zero trust network architec
 ## Privacy & Security First
 
 ZTNS is built with privacy and security as core principles:
+
 - 100% Client-side: All simulation logic runs in your browser
 - No Authentication: Anonymous access, no sign-ups required
 - No Data Collection: We don't track, store, or analyze your usage
@@ -14,6 +15,7 @@ ZTNS is built with privacy and security as core principles:
 ## About Zero Trust
 
 Zero Trust is a security model that operates on the principle "never trust, always verify." Unlike traditional perimeter-based security, zero trust:
+
 - Assumes no implicit trust, regardless of location or network
 - Requires continuous authentication and authorization
 - Implements least-privilege access controls
@@ -24,7 +26,7 @@ Zero Trust is a security model that operates on the principle "never trust, alwa
 - **Private Simulation**: Runs entirely in your web browser
 - **Interactive Network Design**: Drag-and-drop interface for creating network topologies
 - **Real-Time Simulation**: Watch packets flow through your zero trust architecture
-- **Dynamic Visualization**: 
+- **Dynamic Visualization**:
   - Animated connection types (data, auth, policy)
   - Component state indicators (active, processing, error)
   - Visual feedback for security events
@@ -36,6 +38,7 @@ Zero Trust is a security model that operates on the principle "never trust, alwa
 ## Web Interface
 
 The simulator provides an intuitive web interface with:
+
 - Network Design Canvas: Create and modify your network topology
 - Component Palette: Drag-and-drop network components
 - Simulation Controls: Start, pause, and reset simulations
@@ -45,6 +48,7 @@ The simulator provides an intuitive web interface with:
 ## Component States
 
 Components in the simulation provide visual feedback through different states:
+
 - **Active**: Pulsing glow indicating normal operation
 - **Processing**: Size animation showing active data handling
 - **Error**: Shake animation and red highlight for security events
@@ -53,6 +57,7 @@ Components in the simulation provide visual feedback through different states:
 ## Connection Types
 
 The simulator visualizes different types of network connections:
+
 - **Data Connections**: Blue animated lines for general data flow
 - **Auth Connections**: Red animated lines for authentication traffic
 - **Policy Connections**: Green animated lines for policy checks
@@ -73,4 +78,4 @@ This project is under active development. Features and APIs may change as we con
 
 ## License
 
-Licensed under MIT license ([LICENSE](LICENSE) or http://opensource.org/licenses/MIT)
+Licensed under MIT license ([LICENSE](LICENSE) or <http://opensource.org/licenses/MIT>)

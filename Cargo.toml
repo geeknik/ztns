@@ -1,0 +1,19 @@
+[package]
+name = "ztns"
+version = "0.1.0"
+edition = "2021"
+description = "Zero Trust Network Simulator - A secure environment for testing zero trust implementations"
+
+[dependencies]
+axum = { version = "0.7", features = ["json"] }
+tokio = { version = "1.35", features = ["full"] }
+tower = { version = "0.4", features = ["util"] }
+tower-http = { version = "0.5", features = ["trace", "cors", "compression-full", "timeout", "limit", "catch-panic", "sensitive-headers", "fs", "set-header"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+secrecy = "0.8"
+uuid = { version = "1.6", features = ["v4", "serde"] }
+thiserror = "1.0"
+anyhow = "1.0"
