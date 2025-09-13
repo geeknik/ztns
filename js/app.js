@@ -535,7 +535,7 @@ class ZTNSimulator {
         this.ctx.fill();
 
         // Add border
-        this.ctx.strokeStyle = '#2c3e50';
+        this.ctx.strokeStyle = document.body.classList.contains('dark-mode') ? '#ffffff' : '#2c3e50';
         this.ctx.lineWidth = 2;
         this.ctx.stroke();
 
@@ -547,7 +547,7 @@ class ZTNSimulator {
 
         // Draw label
         this.ctx.font = '14px Arial';
-        this.ctx.fillStyle = '#2c3e50';
+        this.ctx.fillStyle = document.body.classList.contains('dark-mode') ? '#ffffff' : '#2c3e50';
         this.ctx.fillText(component.type.replace('-', ' '), component.x, component.y + radius + 20);
     }
 

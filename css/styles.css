@@ -93,6 +93,8 @@
     --metric-border: #e9ecef;
     --metric-value: #2c3e50;
     --metric-label: #6c757d;
+    --error-color: #e74c3c;
+    --error-bg: rgba(231, 76, 60, 0.1);
 }
 
 body.dark-mode {
@@ -110,6 +112,8 @@ body.dark-mode {
     --metric-border: #4b5563;
     --metric-value: #f3f4f6;
     --metric-label: #9ca3af;
+    --error-color: #ef4444;
+    --error-bg: rgba(239, 68, 68, 0.1);
 }
 
 body {
@@ -233,19 +237,19 @@ button:hover {
 .form-field input:focus,
 .form-field select:focus {
     outline: none;
-    border-color: #3498db;
+    border-color: var(--accent-color);
     box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
 .field-error {
-    color: #e74c3c;
+    color: var(--error-color);
     font-size: 0.8rem;
     margin-top: 0.25rem;
 }
 
 .invalid {
-    border-color: #e74c3c !important;
-    background-color: rgba(231, 76, 60, 0.1);
+    border-color: var(--error-color) !important;
+    background-color: var(--error-bg);
 }
 
 /* Control Panel */
